@@ -154,98 +154,106 @@ function Core.GetClosestPlayers(distance)
 end
 
 
-function generateRandomChar(lenght)
+function generateRandomChar(length)
     local charset = {}
     for i = 48,  57 do table.insert(charset, string.char(i)) end
     for i = 65,  90 do table.insert(charset, string.char(i)) end
     for i = 97, 122 do table.insert(charset, string.char(i)) end
-    if not lenght or lenght <= 0 then return '' end
-    return generateRandomChar(lenght - 1) .. charset[math.random(1, #charset)]
+    if not length or length <= 0 then return '' end
+    return generateRandomChar(length - 1) .. charset[math.random(1, #charset)]
 end
  
 function Core.Notify(text, duration, notificationType)
-    -- placement: low, medium, high
-    -- notificationType: 'info', 'error', 'success', 'warning'
-    local placement = "top-right"
-    local duration = tonumber(duration) or 5000
-    SendNUIMessage({
-        type = "notify",
-        placement = placement,
-        text = text,
-        duration = duration
-    })
+    if not CustomUi.Notify(text, duration, notificationType) then
+        -- notificationType: 'info', 'error', 'success', 'warning'
+        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
+        -- duration: in ms
+        local placement = "top-right"
+        local duration = tonumber(duration) or 5000
+        SendNUIMessage({
+            type = "notify",
+            placement = placement,
+            text = text,
+            duration = duration
+        })
+    end
 end
-RegisterNetEvent("dh_lib:client:notify", function(text, duration)
-    Core.Notify(text, duration)
+
+RegisterNetEvent("dh_lib:client:notify", function(text, duration, notificationType)
+    Core.Notify(text, duration, notificationType)
 end)
 
-
-function Core.ShowStaticMessage(text, status)
-    -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
-    local placement = "top-left"
-    SendNUIMessage({
-        type = "static",
-        text = text,
-        placement = placement,
-        close = status
-    })
+function Core.ShowStaticMessage(text)
+    if not CustomUi.ShowStaticMessage(text) then
+        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
+        local placement = "top-left"
+        SendNUIMessage({
+            type = "static",
+            text = text,
+            placement = placement,
+            close = (text == nil or text == false)
+        })
+    end
 end
 
-function Core.ShowControlButtons(text, status)
-    -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
-    local placement = "bottom-right"
-    SendNUIMessage({
-        type = "controls",
-        text = text,
-        placement = placement,
-        close = status
-    })
+function Core.ShowControlButtons(text)
+    if not CustomUi.ShowControlButtons(text) then
+        -- placement: top-left, top-right, bottom-left, bottom-right, top-center, bottom-center
+        local placement = "bottom-right"
+        SendNUIMessage({
+            type = "controls",
+            text = text,
+            placement = placement,
+            close = (text == nil or text == false)
+        })
+    end
 end
 
 local progressbarCb = nil
 local progressbarBusy = false
 function Core.ShowProgressbar(data, cb)
-    if progressbarBusy then print("Progressbar is busy") return end
-    progressbarBusy = true
-    local duration = data?.duration --@required in ms
-    if not duration then print("Duration is required for progressbar") return end
-    -- placement: low, medium, high
-    local placement = data?.placement or "low"
-    local text = data?.text or "Loading..."
-    local canStop = data?.canStop or false
-    SendNUIMessage({
-        type = "progressbar",
-        text = text,
-        placement = placement,
-        duration = duration
-    })
-    if canStop then 
-        while progressbarCb == nil do 
-            if IsControlJustPressed(0, 73) then 
-                print("zamukam")
-                SendNUIMessage({
-                    type = "progressbar",
-                    close = true
-                })
-                if cb then 
-                    cb(false)
+    if not CustomUi.ShowProgressbar(data, cb) then
+        if progressbarBusy then print("Progressbar is busy") return end
+        progressbarBusy = true
+        local duration = data?.duration --@required in ms
+        if not duration then print("Duration is required for progressbar") return end
+        -- placement: low, medium, high
+        local placement = data?.placement or "low"
+        local text = data?.text or "Loading..."
+        local canStop = data?.canStop or false
+        SendNUIMessage({
+            type = "progressbar",
+            text = text,
+            placement = placement,
+            duration = duration
+        })
+        if canStop then 
+            while progressbarCb == nil do 
+                if IsControlJustPressed(0, 73) then 
+                    SendNUIMessage({
+                        type = "progressbar",
+                        close = true
+                    })
+                    if cb then 
+                        cb(false)
+                    end
+                    return false
                 end
-                return false
+                Wait(1)
             end
-            Wait(1)
+        else 
+            while progressbarCb == nil do 
+                Wait(50)
+            end
         end
-    else 
-        while progressbarCb == nil do 
-            Wait(50)
+        local temp = progressbarCb
+        progressbarCb = nil
+        progressbarBusy = false
+        if cb then 
+            cb(temp)
+        else 
+            return temp
         end
-    end
-    local temp = progressbarCb
-    progressbarCb = nil
-    progressbarBusy = false
-    if cb then 
-        cb(temp)
-    else 
-        return temp
     end
 end
 
@@ -254,12 +262,14 @@ RegisterNUICallback("progressbarResult", function(data, cb)
     cb('ok')
 end)
 
-RegisterCommand("progressbar", function()
-    local status = Core.ShowProgressbar({duration = 7000, text = "Hejka tu lenka", canStop = true })
-    print(status)
-end)
-
-
+function Core.CloseProgressbar()
+    if not CustomUi.CloseProgressbar() then
+        SendNUIMessage({
+            type = "progressbar",
+            close = true
+        })
+    end
+end
 
 local inVeh = false
 local isDriver = false
@@ -271,16 +281,16 @@ CreateThread(function()
         if not inVeh then 
             if veh ~= 0 then 
                 inVeh = true
-                print("Entered vehicle")
+                -- print("Entered vehicle")
                 local seat = GetPedInVehicleSeat(veh, -1)
                 if seat == ped then 
-                    print("Driver entered")
+                    -- print("Driver entered")
                     isDriver = true
-                    TriggerEvent("vehicleStatus", veh, true, true)
+                    TriggerEvent("dh_lib:client:vehicleStatus", veh, true, true)
                 else 
-                    print("Passenger entered")
+                    -- print("Passenger entered")
                     isDriver = false
-                    TriggerEvent("vehicleStatus", veh, true, false)
+                    TriggerEvent("dh_lib:client:vehicleStatus", veh, true, false)
                     CreateThread( function()
                         passengerWaiting(veh)
                     end)
@@ -289,17 +299,17 @@ CreateThread(function()
         elseif inVeh then
             if veh == 0 then 
                 inVeh = false
-                print("Exited vehicle")
+                -- print("Exited vehicle")
                 isDriver = false
-                TriggerEvent("vehicleStatus", nil, false, false)
+                TriggerEvent("dh_lib:client:vehicleStatus", nil, false, false)
             end
             if not isDriver then 
                 local ped = PlayerPedId()
                 local seat = GetPedInVehicleSeat(veh, -1)
                 if seat == ped then 
-                    print("Driver entered")
+                    -- print("Driver entered")
                     isDriver = true
-                    TriggerEvent("vehicleStatus", veh, true, true)
+                    TriggerEvent("dh_lib:client:vehicleStatus", veh, true, true)
                 end
             end
         end
@@ -312,10 +322,14 @@ function passengerWaiting(veh)
         local ped = PlayerPedId()
         local seat = GetPedInVehicleSeat(veh, -1)
         if seat == ped then 
-            TriggerEvent("vehicleStatus", veh, true, true)
+            TriggerEvent("dh_lib:client:vehicleStatus", veh, true, true)
             isDriver = true
             break
         end
         Wait(1000)
     end
+end
+
+Core.SendLog = function(webhook, data)
+    TriggerServerEvent("dh_lib:server:sendLog", GetPlayerServerId(PlayerId()), webhook, data)
 end

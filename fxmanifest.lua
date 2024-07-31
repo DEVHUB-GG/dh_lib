@@ -17,15 +17,13 @@ server_scripts {
     's.main.lua',
     'server/s.*.lua',
     'frameworks/**/s.*.lua',
+
 }
-escrow_ignore {
-    'config.lua'
-}
-ui_page "http://88.198.12.245:5185/"
 
 
 
--- ui_page "html/index.html"
+ui_page "html/index.html"
+
 files {
     'html/**/*',
 }
