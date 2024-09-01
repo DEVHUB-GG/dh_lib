@@ -10,5 +10,10 @@ CreateThread( function()
         TriggerEvent("dh_lib:client:setDeathStatus", isDead)
     end)
 
+    RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+        TriggerEvent("dh_lib:client:playerUnloaded")
+        TriggerServerEvent("dh_lib:server:playerUnloaded", GetPlayerServerId(PlayerId()))
+    end)
+
     Core.Loaded = true
 end)

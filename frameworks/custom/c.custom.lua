@@ -1,7 +1,6 @@
 if Shared.Framework ~= "custom" then return end
    
 CreateThread( function()
-    Core.Loaded = true
 
     -- Registers an event for when the player is loaded.
     RegisterNetEvent("OnPlayerLoaded", function()
@@ -14,4 +13,12 @@ CreateThread( function()
     RegisterNetEvent("SetDeathStatus", function(isDead)
         TriggerEvent("dh_lib:client:setDeathStatus", isDead)
     end)
+
+    -- Registers an event for when the player is unloaded.
+    RegisterNetEvent('OnPlayerUnload', function()
+        TriggerEvent("dh_lib:client:playerUnloaded")
+        TriggerServerEvent("dh_lib:server:playerUnloaded", GetPlayerServerId(PlayerId()))
+    end)
+
+    Core.Loaded = true
 end)

@@ -3,7 +3,7 @@ RegisterNetEvent('dh_lib:server:sendLog',function(_source, webhook, data)
     local message = ""
     message = message .. "**Player:** " .. Core.GetFullName(_source) .. " (".._source..")\n**Identifier: **" .. identifier .. "\n\n"
     for k,v in pairs(data) do
-        message = message .. "**"..firstToUpper(k)..":** " .. v .. "\n"
+        message = message .. "**"..Core.String.Capitalize(k)..":** " .. v .. "\n"
     end
 
     PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({
@@ -16,7 +16,3 @@ RegisterNetEvent('dh_lib:server:sendLog',function(_source, webhook, data)
         } },
     }), {['Content-Type'] = 'application/json'})
 end)
-
-function firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
-end

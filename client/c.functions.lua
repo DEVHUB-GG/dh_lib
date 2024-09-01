@@ -333,3 +333,59 @@ end
 Core.SendLog = function(webhook, data)
     TriggerServerEvent("dh_lib:server:sendLog", GetPlayerServerId(PlayerId()), webhook, data)
 end
+
+Core.Promise = function(func)
+    local p = promise:new()
+
+    local function resolve(value)
+        p:resolve(value)
+    end
+
+    -- Safely execute the function
+    Citizen.CreateThread(function()
+        func(resolve)
+    end)
+
+    return Citizen.Await(p)
+end
+
+-- local result = Core.Promise(function(resolve)
+--     Citizen.CreateThread(function()
+--         Citizen.Wait(1000)
+
+--         resolve("Async operation result")
+--     end)
+-- end)
+
+-- print(result) -- "Async operation result"
+
+Core.GetClientTimestamp = function()
+    local year, month, day, hour, minute, second = GetUtcTime()
+    local function isLeapYear(y)
+        return (y % 4 == 0 and y % 100 ~= 0) or (y % 400 == 0)
+    end
+    local daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+    local days = 0
+
+    for y = 1970, year - 1 do
+        days = days + (isLeapYear(y) and 366 or 365)
+    end
+
+    for m = 1, month - 1 do
+        days = days + daysInMonth[m]
+    end
+
+    if month > 2 and isLeapYear(year) then
+        days = days + 1
+    end
+
+    days = days + (day - 1)
+
+    local timestamp = days * 86400 + hour * 3600 + minute * 60 + second
+    return timestamp
+end
+
+Core.GenerateUid = function()
+    local serverId = GetPlayerServerId(PlayerId())
+    return serverId..'DHC'..GetClientTimestamp()
+end

@@ -4,7 +4,7 @@ ESX = nil
 CreateThread(function()
     Wait(5000)
     ESX = exports["es_extended"]:getSharedObject()
-    
+     
     Core.GetIdentifier = function(source)
         local xPlayer = ESX.GetPlayerFromId(source)
         return xPlayer.identifier
@@ -110,6 +110,11 @@ CreateThread(function()
 
     RegisterNetEvent("esx:playerLoaded",function(source)
         TriggerEvent("dh_lib:server:playerLoaded", source)
+    end)
+
+    RegisterNetEvent('esx:playerDropped', function(playerId, reason)
+        TriggerEvent("dh_lib:client:playerUnloaded", playerId)
+        TriggerClientEvent("dh_lib:server:playerUnloaded", playerId)
     end)
 
     Core.Loaded = true
