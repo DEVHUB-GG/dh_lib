@@ -6,7 +6,12 @@ CreateThread(function()
     -- @return The identifier of the player.
     Core.GetIdentifier = function(source)
         -- code here
-        return ""
+        -- check if there is steam, if not get license 
+        local steam = GetPlayerIdentifiers(source)[1]
+        if steam then
+            return steam
+        end
+        return GetPlayerIdentifiers(source)[2]
     end
 
     -- Registers an item with a corresponding function.
