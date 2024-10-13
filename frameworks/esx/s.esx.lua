@@ -4,9 +4,10 @@ ESX = nil
 CreateThread(function()
     Wait(5000)
     ESX = exports["es_extended"]:getSharedObject()
-     
+
     Core.GetIdentifier = function(source)
         local xPlayer = ESX.GetPlayerFromId(source)
+        if not xPlayer then return false end
         return xPlayer.identifier
     end
 
@@ -58,10 +59,10 @@ CreateThread(function()
 
 
     Core.AddItem = function(source, item, amount)
-        if not Core.CanCarry(source, item, amount) then
+        local xPlayer = ESX.GetPlayerFromId(source)
+        if xPlayer.canCarryItem and not xPlayer.canCarryItem(item, amount) then 
             return false
         end
-        local xPlayer = ESX.GetPlayerFromId(source)
         xPlayer.addInventoryItem(item, amount)
         return true
     end
@@ -74,22 +75,14 @@ CreateThread(function()
         xPlayer.removeInventoryItem(item, amount)
         return true
     end
+    Core.CanCarry = function(source, item, amount)
+        local xPlayer = ESX.GetPlayerFromId(source)
+        return xPlayer.canCarryItem(item, amount)
+    end
 
     Core.GetItemCount = function(source, item)
         local xPlayer = ESX.GetPlayerFromId(source)
         return xPlayer.getInventoryItem(item).count
-    end
-
-    Core.CanCarry = function(source, item, amount)
-        local xPlayer = ESX.GetPlayerFromId(source)
-        local itemWeight = ESX.GetItem(item).weight
-        local currentWeight = xPlayer.getWeight()
-        local maxWeight = xPlayer.maxWeight
-        local newWeight = currentWeight + (itemWeight * amount)
-        if newWeight > maxWeight then
-            return false
-        end
-        return true
     end
 
     Core.GetJob = function(source)
@@ -107,8 +100,9 @@ CreateThread(function()
         local xPlayer = ESX.GetPlayerFromId(source)
         return xPlayer.getName()
     end
-
+    
     RegisterNetEvent("esx:playerLoaded",function(source)
+        TriggerClientEvent("dh_lib:client:playerLoaded", source)
         TriggerEvent("dh_lib:server:playerLoaded", source)
     end)
 

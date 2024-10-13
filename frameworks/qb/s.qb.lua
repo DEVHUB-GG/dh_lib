@@ -7,6 +7,7 @@ CreateThread(function()
 
     Core.GetIdentifier = function(source)
         local Player = QBCore.Functions.GetPlayer(source)
+        if not Player then return false end
         return Player.PlayerData.citizenid
     end
     

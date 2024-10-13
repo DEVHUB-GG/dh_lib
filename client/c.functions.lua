@@ -389,3 +389,49 @@ Core.GenerateUid = function()
     local serverId = GetPlayerServerId(PlayerId())
     return serverId..'DHC'..GetClientTimestamp()
 end
+
+Core.DecisionPrompt = function(settings, buttons)
+    return DecisionPrompt(settings, buttons)
+end
+
+local decisionPromise = nil 
+function DecisionPrompt(settings, buttons)
+    decisionPromise = promise:new()
+    settings.placement = settings.placement or "top-right" --"bottom-right", "bottom-left", "top-right", "top-left"
+    if settings.time and settings.time < 2000 then settings.time = 2000 end
+    local time = settings.time or 10000
+    SendNUIMessage({
+        type = "createDecision",
+        title = settings.title,
+        text = settings.text,
+        placement = settings.placement,
+        time = time,
+        buttons = buttons
+    })
+    CreateThread(function()
+        while decisionPromise do
+            for k,v in pairs(buttons) do
+                DisableControlAction(0, v.key, true)
+                if IsDisabledControlJustPressed(0, v.key) then 
+                    decisionPromise:resolve(v.action)
+                end
+            end
+            Wait(1)
+        end
+    end)
+    CreateThread(function()
+        while decisionPromise do
+            time = time - 1000
+            if time <= 0 then
+                decisionPromise:resolve(settings.timeRunOutAction or "decline")
+            end
+            Wait(1000)
+        end
+    end)
+    local decisionResult = Citizen.Await(decisionPromise)
+    decisionPromise = nil
+    SendNUIMessage({
+        type = "closeDecision",
+    })
+    return decisionResult
+end

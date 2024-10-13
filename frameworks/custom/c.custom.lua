@@ -1,9 +1,9 @@
 if Shared.Framework ~= "custom" then return end
-   
+    
 CreateThread( function()
-
+ 
     -- Registers an event for when the player is loaded.
-    RegisterNetEvent("OnPlayerLoaded", function()
+    RegisterNetEvent("playerSpawned", function()
         TriggerEvent("dh_lib:client:playerLoaded")
         TriggerServerEvent("dh_lib:server:playerLoaded", GetPlayerServerId(PlayerId()))
     end)
