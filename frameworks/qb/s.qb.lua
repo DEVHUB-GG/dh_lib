@@ -38,18 +38,18 @@ CreateThread(function()
     end
 
     Core.GetBank = function(source)
-        local accountName = Core.GetIdentifier(source)
-        return exports['qb-banking']:GetAccountBalance(accountName)
+        local Player = QBCore.Functions.GetPlayer(source)
+        return Player.PlayerData.money.bank
     end
     
     Core.AddBank = function(source, amount)
-        local accountName = Core.GetIdentifier(source)
-        return exports['qb-banking']:AddMoney(accountName, amount)
+        local Player = QBCore.Functions.GetPlayer(source)
+        return Player.Functions.AddMoney('bank', amount, 'bank deposit')
     end
 
     Core.RemoveBank = function(source, amount)
-        local accountName = Core.GetIdentifier(source)
-        return exports['qb-banking']:RemoveMoney(accountName, amount)
+        local Player = QBCore.Functions.GetPlayer(source)
+        return Player.Functions.RemoveMoney('bank', amount, 'bank withdrawal')
     end
 
     Core.AddItem = function(source, item, amount)
@@ -71,10 +71,10 @@ CreateThread(function()
     Core.GetJob = function(source)
         local xPlayer = QBCore.Functions.GetPlayer(source)
         local jobData = {
-            name = xPlayer.PlayerData.job.name or "unemployed",
-            label = xPlayer.PlayerData.job.label or "Unemployed",
-            grade = xPlayer.PlayerData.job.grade or 0,
-            onDuty = xPlayer.PlayerData.job.onDuty or false,
+            name = xPlayer.PlayerData?.job?.name or "unemployed",
+            label = xPlayer.PlayerData?.job?.label or "Unemployed",
+            grade = xPlayer.PlayerData?.job?.grade?.level or 0,
+            onDuty = xPlayer.PlayerData?.job?.onduty or false,
         }
         return jobData
     end
@@ -83,6 +83,18 @@ CreateThread(function()
         local xPlayer = QBCore.Functions.GetPlayer(source)
         return xPlayer.PlayerData.charinfo.firstname .. " " .. xPlayer.PlayerData.charinfo.lastname
     end
+
+    RegisterNetEvent("hospital:server:SetLaststandStatus",function(status)
+        local source = source
+        if status then
+            TriggerClientEvent("dh_lib:client:setDeathStatus", source,  status)
+        end
+    end)
+
+    RegisterNetEvent('hospital:server:SetDeathStatus', function(isDead)
+        local source = source
+        TriggerClientEvent("dh_lib:client:setDeathStatus", source,  isDead)
+    end)
 
     Core.Loaded = true
 end)

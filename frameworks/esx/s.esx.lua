@@ -60,7 +60,7 @@ CreateThread(function()
 
     Core.AddItem = function(source, item, amount)
         local xPlayer = ESX.GetPlayerFromId(source)
-        if xPlayer.canCarryItem and not xPlayer.canCarryItem(item, amount) then 
+        if not Core.CanCarry(source, item, amount) then
             return false
         end
         xPlayer.addInventoryItem(item, amount)
@@ -77,6 +77,7 @@ CreateThread(function()
     end
     Core.CanCarry = function(source, item, amount)
         local xPlayer = ESX.GetPlayerFromId(source)
+        if not xPlayer.canCarryItem then return true end
         return xPlayer.canCarryItem(item, amount)
     end
 
@@ -88,10 +89,10 @@ CreateThread(function()
     Core.GetJob = function(source)
         local xPlayer = ESX.GetPlayerFromId(source)
         local jobData = {
-            name = xPlayer.job.name or "unemployed",
-            label = xPlayer.job.label or "Unemployed",
-            grade = xPlayer.job.grade or 0,
-            onDuty = xPlayer.job.onDuty or false,
+            name = xPlayer?.job?.name or "unemployed",
+            label = xPlayer?.job?.label or "Unemployed",
+            grade = xPlayer?.job?.grade or 0,
+            onDuty = xPlayer?.job?.onDuty or true,
         }
         return jobData
     end

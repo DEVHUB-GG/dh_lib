@@ -9,7 +9,7 @@ CreateThread( function()
         TriggerEvent("dh_lib:client:setDeathStatus", true)
     end)
 
-    AddEventHandler('playerSpawned', function()
+    RegisterNetEvent('esx_ambulancejob:revive', function()
         TriggerEvent("dh_lib:client:setDeathStatus", false)
     end)
 

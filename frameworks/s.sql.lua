@@ -1,5 +1,5 @@
 Core.SQL = {}
-
+ 
 Core.SQL.Execute = function(query, args, cb)
     MySQL.query(query, args, cb)
 end

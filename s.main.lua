@@ -3,7 +3,6 @@ exports("GetCoreObject", function()
     return Core
 end)
 
-
 PerformHttpRequest('https://raw.githubusercontent.com/DEVHUB-GG/dh_versions/main/versions.json', function(_, res)
     local resName = GetCurrentResourceName()
     local resPrefix = "^3["..resName.."]^"

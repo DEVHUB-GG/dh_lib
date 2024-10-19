@@ -79,7 +79,29 @@ function Core.SpawnObject(model, coords, cb, isLocal)
 		end
 	end)
 end
-
+function Core.DeleteVehicle(vehicle)
+    SetEntityAsMissionEntity(vehicle, false, true) 
+    local attempt = 0
+    NetworkRequestControlOfEntity(vehicle)
+    while not NetworkHasControlOfEntity(vehicle) and attempt < 100 do
+        attempt = attempt + 1
+        Wait(10)
+    end
+    if attempt >= 100 then
+        return false
+    end
+    attempt = 0
+    while DoesEntityExist(vehicle) and attempt < 100 do
+        attempt = attempt + 1
+        SetEntityAsMissionEntity(vehicle, false, true)
+        DeleteEntity(vehicle)
+        Wait(10)
+    end
+    if attempt >= 100 then
+        return false
+    end
+    return true
+end
 function Core.SpawnVehicle(modelName, coords, heading, cb, _networked)
 	local model = (type(modelName) == 'number' and modelName or GetHashKey(modelName))
 	Citizen.CreateThread(function()
