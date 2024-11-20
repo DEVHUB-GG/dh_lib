@@ -84,3 +84,13 @@ if Shared.Target == "AUTO DETECT" then
         Shared.Target = "standalone"
     end
 end
+
+
+function createExport(name, cb)
+    exports(name, function(...)
+        return cb(...)
+    end)
+    AddEventHandler(('__cfx_export_dh_lib_%s'):format(name), function(setCB)
+        setCB(cb)
+    end)
+end

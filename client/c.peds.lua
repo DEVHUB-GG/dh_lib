@@ -1,5 +1,5 @@
 local Peds = {}
-exports('addPedToCoords', function(model, coords)
+createExport('addPedToCoords', function(model, coords)
     if not model or not coords or not coords.w then print('WRONG EXPORT VALUE',model,coords) return end
     for i=1, #Peds do
         local pedConfig = Peds[i]

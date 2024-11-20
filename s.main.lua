@@ -1,5 +1,5 @@
 Core = {}
-exports("GetCoreObject", function()
+createExport("GetCoreObject", function()
     return Core
 end)
 

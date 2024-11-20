@@ -66,18 +66,16 @@ end
 
 function Core.SpawnObject(model, coords, cb, isLocal)
 	local model = (type(model) == 'number' and model or GetHashKey(model))
-
-	Citizen.CreateThread(function()
-		Core.RequestModel(model)
-		local networked = true 
-		if isLocal == false then 
-			networked = false
-		end
-		local obj = CreateObject(model, coords.x, coords.y, coords.z, networked, false, networked)
-		if cb then
-			cb(obj)
-		end
-	end)
+	Core.RequestModel(model)
+	local networked = true 
+	if isLocal then 
+		networked = false
+	end
+	local obj = CreateObject(model, coords.x, coords.y, coords.z, networked, false, networked)
+	if cb then
+		cb(obj)
+	end
+    return obj
 end
 function Core.DeleteVehicle(vehicle)
     SetEntityAsMissionEntity(vehicle, false, true) 
@@ -102,6 +100,7 @@ function Core.DeleteVehicle(vehicle)
     end
     return true
 end
+
 function Core.SpawnVehicle(modelName, coords, heading, cb, _networked)
 	local model = (type(modelName) == 'number' and modelName or GetHashKey(modelName))
 	Citizen.CreateThread(function()
